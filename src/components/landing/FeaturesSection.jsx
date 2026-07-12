@@ -36,7 +36,7 @@ export default function FeaturesSection() {
           </p>
         </Reveal>
 
-        <Stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border rounded-md overflow-hidden border border-border" gap={0.05}>
+        <Stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" gap={0.05}>
           {FEATURES.map(({ icon: Icon, title, desc, href }) => (
             <StaggerItem key={title}>
               <Link to={href} className="group bg-transparent p-7 flex flex-col gap-4 h-full transition-colors hover:bg-primary/5">
