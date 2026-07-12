@@ -73,11 +73,18 @@ function generateBrainCurves(count = 220) {
 const tubeVertexShader = `
   varying vec2 vUv;
   uniform float time;
+  uniform float pulsePos;
+  uniform float pulseStrength;
+  uniform float pulseWidth;
   varying float vProgress;
   void main() {
     vUv = uv;
     vProgress = smoothstep(-1.0, 1.0, sin(vUv.x * 8.0 + time * 3.0));
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    // Bulge the tube outward where the pulse is traveling
+    float d = vUv.x - pulsePos;
+    float bulge = exp(-d * d / (2.0 * pulseWidth * pulseWidth)) * pulseStrength;
+    vec3 displaced = position + normal * bulge;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
   }
 `;
 
@@ -152,6 +159,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         time: { value: 0 },
         color: { value: GREEN.clone() },
         opacity: { value: opacity * 0.7 },
+        pulsePos: { value: -1 },
+        pulseStrength: { value: 0 },
+        pulseWidth: { value: 0.06 },
       },
       vertexShader: tubeVertexShader,
       fragmentShader: tubeFragmentShader,
@@ -162,9 +172,12 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
 
     // --- Create tube meshes ---
     const tubes = [];
+    const tubeMaterials = [];
     curves.forEach((curve) => {
       const geo = new THREE.TubeGeometry(curve, 30, 0.006, 5, false);
-      const mesh = new THREE.Mesh(geo, tubeMaterial);
+      const mat = tubeMaterial.clone();
+      tubeMaterials.push(mat);
+      const mesh = new THREE.Mesh(geo, mat);
       tubes.push(mesh);
     });
 
@@ -248,6 +261,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       pulses.push({
         mesh,
         curve: curves[curveIdx],
+        tubeMat: tubeMaterials[curveIdx],
         offset: Math.random(),
         prevOffset: Math.random(),
         speed: 0.0005 + Math.random() * 0.005, // varied speeds across strands
@@ -265,8 +279,8 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       frame++;
       const time = frame * 0.016;
 
-      // Update pulse shader time
-      tubeMaterial.uniforms.time.value = time;
+      // Update pulse shader time on all tube materials
+      tubeMaterials.forEach((m) => { m.uniforms.time.value = time; });
 
       // Smoothed scroll for stable north-south tilt
       smoothedScroll += (scrollProgress.current - smoothedScroll) * 0.05;
@@ -313,6 +327,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         p.mesh.material.opacity = Math.min(opacity, 1);
         const s = 0.6 + wave * 0.8 + p.lapPulse * 2.5;
         p.mesh.scale.set(3.0 * s, 0.35 * s, 0.35 * s);
+        // Drive the tube bulge — displaced outward where the pulse sits
+        p.tubeMat.uniforms.pulsePos.value = p.offset;
+        p.tubeMat.uniforms.pulseStrength.value = (wave * 0.5 + p.lapPulse * 0.6) * 0.008;
       });
 
       renderer.render(scene, camera);
@@ -337,6 +354,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       mount.removeChild(renderer.domElement);
       renderer.dispose();
       tubes.forEach((t) => t.geometry.dispose());
+      tubeMaterials.forEach((m) => m.dispose());
       tubeMaterial.dispose();
       particleGeo.dispose();
       particleMaterial.dispose();
