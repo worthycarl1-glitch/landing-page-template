@@ -222,15 +222,14 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    // --- Neuron flash spheres (sparse, fire on scroll) ---
-    const flashGroup = new THREE.Group();
-    brainGroup.add(flashGroup);
-    const flashCount = 14;
-    const flashSpheres = [];
-    for (let i = 0; i < flashCount; i++) {
+    // --- Light pulses that travel along the brain strand curves ---
+    const pulseGroup = new THREE.Group();
+    brainGroup.add(pulseGroup);
+    const pulseCount = 18;
+    const pulses = [];
+    for (let i = 0; i < pulseCount; i++) {
       const curveIdx = Math.floor(Math.random() * curves.length);
-      const pt = curves[curveIdx].getPointAt(Math.random());
-      const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.02, 8, 8);
+      const geo = new THREE.SphereGeometry(0.025, 10, 10);
       const mat = new THREE.MeshBasicMaterial({
         color: GREEN.clone(),
         transparent: true,
@@ -239,10 +238,14 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         depthWrite: false,
       });
       const sphere = new THREE.Mesh(geo, mat);
-      sphere.position.copy(pt);
-      sphere.userData = { phase: Math.random() * Math.PI * 2, baseScale: 0.5 + Math.random() * 0.8 };
-      flashGroup.add(sphere);
-      flashSpheres.push(sphere);
+      pulseGroup.add(sphere);
+      pulses.push({
+        mesh: sphere,
+        curve: curves[curveIdx],
+        offset: Math.random(),
+        speed: 0.001 + Math.random() * 0.003,
+        glow: new THREE.Color(0x4ade80),
+      });
     }
 
     // --- Animation loop ---
@@ -267,14 +270,10 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       const targetX = smoothedScroll * Math.PI * 1.5;
       brainGroup.rotation.x += (targetX - brainGroup.rotation.x) * 0.05;
 
-      // Scroll velocity — spikes neuron firing
-      const scrollVel = Math.abs(scrollProgress.current - lastScroll);
-      lastScroll = scrollProgress.current;
-
       // Update particle positions along their curves
       const posAttr = particleGeo.attributes.position;
       for (let i = 0; i < particleData.length; i++) {
-        particleData[i].offset += particleData[i].speed + scrollVel * 0.5;
+        particleData[i].offset += particleData[i].speed;
         particleData[i].offset %= 1;
         const p = particleData[i].curve.getPointAt(particleData[i].offset);
         posAttr.array[i * 3] = p.x;
@@ -283,14 +282,16 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       }
       posAttr.needsUpdate = true;
 
-      // Flashing neurons — slow base rate, gentle scroll boost
-      const fireBoost = Math.min(scrollVel * 40, 0.5);
-      flashSpheres.forEach((s) => {
-        const pulse = Math.sin(time * (0.4 + fireBoost * 0.8) + s.userData.phase);
-        const intensity = Math.max(0, pulse) * (0.15 + fireBoost * 0.5);
-        s.material.opacity = intensity;
-        const scale = s.userData.baseScale * (1 + intensity * 1.5);
-        s.scale.setScalar(scale);
+      // Light pulses traveling along the strands
+      pulses.forEach((p) => {
+        p.offset += p.speed;
+        p.offset %= 1;
+        const pt = p.curve.getPointAt(p.offset);
+        p.mesh.position.copy(pt);
+        // Bright at the head of the pulse, fading behind — sine envelope
+        const wave = Math.sin(p.offset * Math.PI);
+        p.mesh.material.opacity = wave * 0.8;
+        p.mesh.scale.setScalar(0.5 + wave * 2.0);
       });
 
       renderer.render(scene, camera);
@@ -318,7 +319,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       tubeMaterial.dispose();
       particleGeo.dispose();
       particleMaterial.dispose();
-      flashSpheres.forEach((s) => { s.geometry.dispose(); s.material.dispose(); });
+      pulses.forEach((p) => { p.mesh.geometry.dispose(); p.mesh.material.dispose(); });
     };
   }, [opacity]);
 
