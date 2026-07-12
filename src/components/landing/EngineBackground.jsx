@@ -232,7 +232,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       const curveIdx = curveIndices[i];
       // Rounded diamond / eye-lip shape: octahedron with subdivision for soft edges,
       // flattened vertically to read as an almond / pressed-lips silhouette.
-      const geo = new THREE.OctahedronGeometry(0.018, 2);
+      // Cross-section (y, z) fits inside the tube radius (0.006) so the pulse
+      // appears embedded inside the strand; long axis (x) stretches along it.
+      const geo = new THREE.OctahedronGeometry(0.012, 2);
       const mat = new THREE.MeshBasicMaterial({
         color: GREEN.clone(),
         transparent: true,
@@ -241,7 +243,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         depthWrite: false,
       });
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.scale.set(1.4, 0.5, 1.0);
+      mesh.scale.set(3.0, 0.35, 0.35);
       pulseGroup.add(mesh);
       pulses.push({
         mesh,
@@ -310,7 +312,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         const opacity = wave * 0.7 + p.lapPulse * 0.8;
         p.mesh.material.opacity = Math.min(opacity, 1);
         const s = 0.6 + wave * 0.8 + p.lapPulse * 2.5;
-        p.mesh.scale.set(1.4 * s, 0.5 * s, 1.0 * s);
+        p.mesh.scale.set(3.0 * s, 0.35 * s, 0.35 * s);
       });
 
       renderer.render(scene, camera);
