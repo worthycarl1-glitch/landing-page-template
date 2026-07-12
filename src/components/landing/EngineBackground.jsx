@@ -302,6 +302,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
 
         const pt = p.curve.getPointAt(p.offset);
         p.mesh.position.copy(pt);
+        // Orient the long axis (X) along the strand tangent — like a ball in a hose
+        const tangent = p.curve.getTangentAt(p.offset).normalize();
+        p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), tangent);
         // Sine envelope for travel brightness + lap pulsate boost
         const wave = Math.sin(p.offset * Math.PI);
         const opacity = wave * 0.7 + p.lapPulse * 0.8;
