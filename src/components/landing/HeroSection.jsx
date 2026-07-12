@@ -14,8 +14,6 @@ const HERO_STATS = [
   { to: 18, prefix: "$", suffix: "k", label: "Revenue" },
 ];
 
-const HERO_IMAGE = "https://media.base44.com/images/public/6a531807448ccafb5fbc5248/9b12eeaee_generated_87d39218.png";
-
 export default function HeroSection() {
   const reduce = useReducedMotion();
 
@@ -25,8 +23,8 @@ export default function HeroSection() {
       <div className="pointer-events-none absolute inset-x-0 -top-40 h-[500px] bg-gradient-to-b from-primary/8 via-primary/4 to-transparent blur-[100px]" />
 
       <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-0">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Copy */}
+        <div className="max-w-2xl">
+          {/* Copy */}
           <div>
             <motion.div
               initial={reduce ? false : { opacity: 0, y: 12 }}
@@ -85,23 +83,6 @@ export default function HeroSection() {
             </motion.p>
           </div>
 
-          {/* Right: Hero visual */}
-          <motion.div
-            className="relative hidden lg:block"
-            initial={reduce ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: PUNCHY, delay: 0.2 }}
-          >
-            <div className="relative rounded-md overflow-hidden border border-border">
-              <img
-                src={HERO_IMAGE}
-                alt="Abstract 3D kinetic clockwork mechanism with green energy flowing through glass tubes — representing the precision of the setter-closer system"
-                className="w-full h-auto"
-              />
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-            </div>
-          </motion.div>
         </div>
       </div>
 
