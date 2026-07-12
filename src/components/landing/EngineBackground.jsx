@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 
-const ENGINE_IMAGE = "https://media.base44.com/images/public/6a531807448ccafb5fbc5248/44e96843d_generated_image.png";
+const ENGINE_IMAGE = "https://media.base44.com/images/public/6a531807448ccafb5fbc5248/727d347c5_generated_image.png";
 
 /**
  * True 3D engine background: the engine image is wrapped around a cylinder
