@@ -8,6 +8,7 @@ import FeaturesSection from "@/components/landing/FeaturesSection";
 import PricingSection from "@/components/landing/PricingSection";
 import DemoSection from "@/components/landing/DemoSection";
 import Footer from "@/components/landing/Footer";
+import ScrollBackground from "@/components/landing/ScrollBackground";
 
 export default function LandingPage() {
   const reduce = useReducedMotion();
@@ -16,6 +17,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground antialiased overflow-x-hidden">
+      {/* 3D scroll-spinning background */}
+      <ScrollBackground />
+
       {/* Scroll progress rail */}
       {!reduce && (
         <motion.div
