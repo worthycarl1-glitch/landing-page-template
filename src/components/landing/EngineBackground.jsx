@@ -222,9 +222,34 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
+    // --- Neuron flash spheres (sparse, fire on scroll) ---
+    const flashGroup = new THREE.Group();
+    brainGroup.add(flashGroup);
+    const flashCount = 14;
+    const flashSpheres = [];
+    for (let i = 0; i < flashCount; i++) {
+      const curveIdx = Math.floor(Math.random() * curves.length);
+      const pt = curves[curveIdx].getPointAt(Math.random());
+      const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.02, 8, 8);
+      const mat = new THREE.MeshBasicMaterial({
+        color: GREEN.clone(),
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const sphere = new THREE.Mesh(geo, mat);
+      sphere.position.copy(pt);
+      sphere.userData = { phase: Math.random() * Math.PI * 2, baseScale: 0.5 + Math.random() * 0.8 };
+      flashGroup.add(sphere);
+      flashSpheres.push(sphere);
+    }
+
     // --- Animation loop ---
     let rafId;
     let frame = 0;
+    let smoothedScroll = 0;
+    let lastScroll = 0;
     const animate = () => {
       frame++;
       const time = frame * 0.016;
@@ -232,18 +257,24 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       // Update pulse shader time
       tubeMaterial.uniforms.time.value = time;
 
-      // Smooth scroll-driven Y rotation
-      const targetY = scrollProgress.current * Math.PI * 2;
-      brainGroup.rotation.y += (targetY - brainGroup.rotation.y) * 0.04;
+      // Smoothed scroll for stable north-south tilt
+      smoothedScroll += (scrollProgress.current - smoothedScroll) * 0.05;
 
-      // Slow auto-rotation + subtle tilt
-      brainGroup.rotation.y += 0.0015;
-      brainGroup.rotation.x = Math.sin(time * 0.3) * 0.1;
+      // Constant east-to-west rotation (Y axis, always spinning)
+      brainGroup.rotation.y += 0.005;
+
+      // Scroll-driven north-to-south tilt (X axis)
+      const targetX = smoothedScroll * Math.PI * 1.5;
+      brainGroup.rotation.x += (targetX - brainGroup.rotation.x) * 0.05;
+
+      // Scroll velocity — spikes neuron firing
+      const scrollVel = Math.abs(scrollProgress.current - lastScroll);
+      lastScroll = scrollProgress.current;
 
       // Update particle positions along their curves
       const posAttr = particleGeo.attributes.position;
       for (let i = 0; i < particleData.length; i++) {
-        particleData[i].offset += particleData[i].speed;
+        particleData[i].offset += particleData[i].speed + scrollVel * 0.5;
         particleData[i].offset %= 1;
         const p = particleData[i].curve.getPointAt(particleData[i].offset);
         posAttr.array[i * 3] = p.x;
@@ -251,6 +282,16 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         posAttr.array[i * 3 + 2] = p.z;
       }
       posAttr.needsUpdate = true;
+
+      // Flashing neurons — fire faster when scrolling
+      const fireBoost = Math.min(scrollVel * 80, 1);
+      flashSpheres.forEach((s) => {
+        const pulse = Math.sin(time * (2 + fireBoost * 6) + s.userData.phase);
+        const intensity = Math.max(0, pulse) * (0.3 + fireBoost * 0.7);
+        s.material.opacity = intensity;
+        const scale = s.userData.baseScale * (1 + intensity * 1.5);
+        s.scale.setScalar(scale);
+      });
 
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
@@ -277,6 +318,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       tubeMaterial.dispose();
       particleGeo.dispose();
       particleMaterial.dispose();
+      flashSpheres.forEach((s) => { s.geometry.dispose(); s.material.dispose(); });
     };
   }, [opacity]);
 
