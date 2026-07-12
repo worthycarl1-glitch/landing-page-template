@@ -2,15 +2,14 @@ import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "framer-motion";
 
-const ENGINE_IMAGE = "https://media.base44.com/images/public/6a531807448ccafb5fbc5248/727d347c5_generated_image.png";
+const GREEN = 0x4ade80;
 
 /**
- * A contained 3D engine object (not a full-screen wrap).
- * The image is mapped onto a cylinder that rotates on its Y axis
- * as the user scrolls — like a turntable showing all sides.
- * Camera is positioned far enough to see it as an object.
+ * JARVIS-style holographic brain background.
+ * Wireframe sphere + orbital rings + glowing core.
+ * Rotates on its Y axis as the user scrolls.
  */
-export default function EngineBackground({ opacity = 0.6, overlay = 0.3 }) {
+export default function EngineBackground({ opacity = 0.5, overlay = 0.3 }) {
   const mountRef = useRef(null);
   const reduce = useReducedMotion();
   const scrollProgress = useRef(0);
@@ -25,43 +24,97 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.3 }) {
     scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 15);
+    camera.position.set(0, 0, 18);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
 
-    let mesh = null;
-    const loader = new THREE.TextureLoader();
+    const group = new THREE.Group();
+    scene.add(group);
 
-    loader.load(ENGINE_IMAGE, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    // --- Wireframe sphere ---
+    const sphereGeo = new THREE.SphereGeometry(5, 48, 32);
+    const sphereMat = new THREE.MeshBasicMaterial({
+      color: GREEN,
+      wireframe: true,
+      transparent: true,
+      opacity: opacity * 0.4,
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    group.add(sphere);
 
-      // Moderate radius so it's a visible object, not a barrel around us
-      const radius = 4.5;
-      const heightCyl = 10;
-      const segments = 128;
+    // Inner denser wireframe for depth
+    const sphereGeo2 = new THREE.SphereGeometry(3.5, 32, 20);
+    const sphereMat2 = new THREE.MeshBasicMaterial({
+      color: GREEN,
+      wireframe: true,
+      transparent: true,
+      opacity: opacity * 0.25,
+    });
+    const sphere2 = new THREE.Mesh(sphereGeo2, sphereMat2);
+    group.add(sphere2);
 
-      const geo = new THREE.CylinderGeometry(radius, radius, heightCyl, segments, 1, true);
+    // --- Glowing core ---
+    const coreGeo = new THREE.SphereGeometry(1.2, 24, 24);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: GREEN,
+      transparent: true,
+      opacity: opacity * 0.6,
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    group.add(core);
 
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.repeat.x = -1;
-      texture.offset.x = 1;
+    // Core glow halo (larger transparent sphere)
+    const haloGeo = new THREE.SphereGeometry(2.2, 24, 24);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: GREEN,
+      transparent: true,
+      opacity: opacity * 0.12,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    group.add(halo);
 
-      const mat = new THREE.MeshBasicMaterial({
-        map: texture,
+    // --- Orbital rings ---
+    const rings = [];
+    const ringConfigs = [
+      { radius: 6.5, tube: 0.04, rot: [0, 0, 0] },
+      { radius: 7.0, tube: 0.03, rot: [Math.PI / 3, 0, 0] },
+      { radius: 7.5, tube: 0.025, rot: [0, 0, Math.PI / 2.5] },
+      { radius: 6.0, tube: 0.03, rot: [Math.PI / 2.2, Math.PI / 4, 0] },
+    ];
+
+    ringConfigs.forEach((cfg) => {
+      const ringGeo = new THREE.TorusGeometry(cfg.radius, cfg.tube, 8, 128);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: GREEN,
         transparent: true,
-        opacity,
-        side: THREE.DoubleSide,
-        depthWrite: false,
+        opacity: opacity * 0.5,
       });
-
-      mesh = new THREE.Mesh(geo, mat);
-      scene.add(mesh);
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2]);
+      rings.push(ring);
+      group.add(ring);
     });
 
+    // --- Data arcs (partial torus segments) ---
+    const arcRing = new THREE.TorusGeometry(6.8, 0.06, 8, 128, Math.PI * 0.4);
+    const arcMat = new THREE.MeshBasicMaterial({
+      color: GREEN,
+      transparent: true,
+      opacity: opacity * 0.7,
+    });
+    const arc1 = new THREE.Mesh(arcRing, arcMat);
+    arc1.rotation.set(Math.PI / 4, 0, Math.PI / 6);
+    group.add(arc1);
+
+    const arc2 = new THREE.Mesh(arcRing, arcMat.clone());
+    arc2.material.opacity = opacity * 0.5;
+    arc2.rotation.set(-Math.PI / 3, Math.PI / 2, Math.PI / 4);
+    group.add(arc2);
+
+    // --- Scroll tracking ---
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       scrollProgress.current = max > 0 ? window.scrollY / max : 0;
@@ -69,17 +122,44 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.3 }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
+    // --- Animation loop ---
     let rafId;
+    let frame = 0;
     const animate = () => {
-      if (mesh) {
-        const targetY = scrollProgress.current * Math.PI * 2;
-        mesh.rotation.y += (targetY - mesh.rotation.y) * 0.05;
-      }
+      frame++;
+      const t = frame * 0.01;
+      const targetY = scrollProgress.current * Math.PI * 2;
+
+      // Smooth rotation on Y axis
+      group.rotation.y += (targetY - group.rotation.y) * 0.04;
+
+      // Slow tilt wobble
+      group.rotation.x = Math.sin(t * 0.3) * 0.15;
+
+      // Inner sphere counter-rotates slightly
+      sphere2.rotation.y -= 0.003;
+      sphere2.rotation.x += 0.002;
+
+      // Rings each spin at different rates
+      rings.forEach((r, i) => {
+        r.rotation.z += 0.002 * (i + 1) * 0.3;
+      });
+
+      // Arcs orbit
+      arc1.rotation.z += 0.004;
+      arc2.rotation.y += 0.003;
+
+      // Core pulse
+      const pulse = 1 + Math.sin(t * 2) * 0.08;
+      core.scale.setScalar(pulse);
+      halo.scale.setScalar(1 + Math.sin(t * 1.5) * 0.12);
+
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
     };
     animate();
 
+    // --- Resize ---
     const onResize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -95,10 +175,20 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.3 }) {
       window.removeEventListener("resize", onResize);
       mount.removeChild(renderer.domElement);
       renderer.dispose();
-      if (mesh) {
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-      }
+      sphereGeo.dispose();
+      sphereMat.dispose();
+      sphereGeo2.dispose();
+      sphereMat2.dispose();
+      coreGeo.dispose();
+      coreMat.dispose();
+      haloGeo.dispose();
+      haloMat.dispose();
+      rings.forEach((r) => {
+        r.geometry.dispose();
+        r.material.dispose();
+      });
+      arcRing.dispose();
+      arcMat.dispose();
     };
   }, [opacity]);
 
