@@ -23,7 +23,7 @@ export default function HeroSection() {
       <div className="pointer-events-none absolute inset-x-0 -top-40 h-[500px] bg-gradient-to-b from-primary/8 via-primary/4 to-transparent blur-[100px]" />
 
       <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-0">
-        <div className="max-w-2xl">
+        <div className="w-full">
           {/* Copy */}
           <div>
             <motion.div
@@ -45,7 +45,7 @@ export default function HeroSection() {
             </motion.h1>
 
             <motion.p
-              className="mt-6 max-w-lg text-lg text-muted-foreground leading-relaxed"
+              className="mt-6 max-w-3xl text-lg text-muted-foreground leading-relaxed"
               initial={reduce ? false : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: PUNCHY, delay: 0.2 }}
@@ -67,7 +67,7 @@ export default function HeroSection() {
                 </Button>
               </a>
               <a href="#demo">
-                <Button variant="outline" size="lg" className="h-12 px-7 text-base w-full min-h-[48px]">
+                <Button variant="outline" size="lg" className="h-12 px-7 text-base min-h-[48px]">
                   Book a demo
                 </Button>
               </a>
