@@ -229,7 +229,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
     const pulses = [];
     for (let i = 0; i < pulseCount; i++) {
       const curveIdx = Math.floor(Math.random() * curves.length);
-      const geo = new THREE.SphereGeometry(0.025, 10, 10);
+      // Rounded diamond / eye-lip shape: octahedron with subdivision for soft edges,
+      // flattened vertically to read as an almond / pressed-lips silhouette.
+      const geo = new THREE.OctahedronGeometry(0.018, 2);
       const mat = new THREE.MeshBasicMaterial({
         color: GREEN.clone(),
         transparent: true,
@@ -237,10 +239,11 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
-      const sphere = new THREE.Mesh(geo, mat);
-      pulseGroup.add(sphere);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.set(1.4, 0.5, 1.0);
+      pulseGroup.add(mesh);
       pulses.push({
-        mesh: sphere,
+        mesh,
         curve: curves[curveIdx],
         offset: Math.random(),
         speed: 0.001 + Math.random() * 0.003,
@@ -290,8 +293,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         p.mesh.position.copy(pt);
         // Bright at the head of the pulse, fading behind — sine envelope
         const wave = Math.sin(p.offset * Math.PI);
-        p.mesh.material.opacity = wave * 0.8;
-        p.mesh.scale.setScalar(0.5 + wave * 2.0);
+        p.mesh.material.opacity = wave * 0.9;
+        const s = 0.6 + wave * 0.8;
+        p.mesh.scale.set(1.4 * s, 0.5 * s, 1.0 * s);
       });
 
       renderer.render(scene, camera);
