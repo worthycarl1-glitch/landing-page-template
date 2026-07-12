@@ -101,11 +101,6 @@ export default function HeroSection() {
               {/* Overlay gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
             </div>
-            {/* Floating stat badge */}
-            <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-md px-4 py-3 shadow-2xl">
-              <div className="font-mono text-xs text-muted-foreground mb-0.5">Live pipeline</div>
-              <div className="font-mono text-xl font-bold text-primary">+34 leads/hr</div>
-            </div>
           </motion.div>
         </div>
       </div>
