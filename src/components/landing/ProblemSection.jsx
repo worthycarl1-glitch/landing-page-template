@@ -36,7 +36,7 @@ export default function ProblemSection() {
           </p>
         </Reveal>
 
-        <Stagger className="grid md:grid-cols-3 gap-px bg-border rounded-md overflow-hidden border border-border">
+        <Stagger className="grid md:grid-cols-3 gap-4">
           {PROBLEMS.map(({ icon: Icon, title, desc }) => (
             <StaggerItem key={title} className="bg-transparent p-8">
               <div className="w-10 h-10 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
