@@ -222,13 +222,14 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    // --- Light pulses that travel along the brain strand curves ---
+    // --- Light pulses on exactly half the brain strand curves ---
     const pulseGroup = new THREE.Group();
     brainGroup.add(pulseGroup);
-    const pulseCount = 18;
     const pulses = [];
-    for (let i = 0; i < pulseCount; i++) {
-      const curveIdx = Math.floor(Math.random() * curves.length);
+    const curveIndices = curves.map((_, i) => i).sort(() => Math.random() - 0.5);
+    const halfCount = Math.floor(curves.length / 2);
+    for (let i = 0; i < halfCount; i++) {
+      const curveIdx = curveIndices[i];
       // Rounded diamond / eye-lip shape: octahedron with subdivision for soft edges,
       // flattened vertically to read as an almond / pressed-lips silhouette.
       const geo = new THREE.OctahedronGeometry(0.018, 2);
@@ -246,7 +247,9 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
         mesh,
         curve: curves[curveIdx],
         offset: Math.random(),
-        speed: 0.001 + Math.random() * 0.003,
+        prevOffset: Math.random(),
+        speed: 0.0005 + Math.random() * 0.005, // varied speeds across strands
+        lapPulse: 0, // decays after a full lap
         glow: new THREE.Color(0x4ade80),
       });
     }
@@ -287,14 +290,23 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
 
       // Light pulses traveling along the strands
       pulses.forEach((p) => {
+        p.prevOffset = p.offset;
         p.offset += p.speed;
-        p.offset %= 1;
+        // Detect lap completion (wrap past 1.0)
+        if (p.offset >= 1) {
+          p.offset %= 1;
+          p.lapPulse = 1; // trigger pulsate
+        }
+        // Decay the lap pulse
+        p.lapPulse *= 0.94;
+
         const pt = p.curve.getPointAt(p.offset);
         p.mesh.position.copy(pt);
-        // Bright at the head of the pulse, fading behind — sine envelope
+        // Sine envelope for travel brightness + lap pulsate boost
         const wave = Math.sin(p.offset * Math.PI);
-        p.mesh.material.opacity = wave * 0.9;
-        const s = 0.6 + wave * 0.8;
+        const opacity = wave * 0.7 + p.lapPulse * 0.8;
+        p.mesh.material.opacity = Math.min(opacity, 1);
+        const s = 0.6 + wave * 0.8 + p.lapPulse * 2.5;
         p.mesh.scale.set(1.4 * s, 0.5 * s, 1.0 * s);
       });
 
