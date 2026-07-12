@@ -22,8 +22,8 @@ export default function HeroSection() {
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-x-0 -top-40 h-[500px] bg-gradient-to-b from-primary/8 via-primary/4 to-transparent blur-[100px]" />
 
-      {/* Translucent backdrop panel behind hero text — lets the engine show through */}
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
+      {/* Transparent — brain is always visible */}
+
 
       <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-0">
         <div className="w-full">

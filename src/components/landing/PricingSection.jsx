@@ -81,7 +81,7 @@ export default function PricingSection() {
           </p>
 
           {/* Billing toggle — the "Shift Lever" */}
-          <div className="mt-8 inline-flex items-center bg-card border border-border rounded-md p-1 relative">
+          <div className="mt-8 inline-flex items-center bg-transparent border border-border/50 rounded-md p-1 relative">
             {["month", "year"].map((iv) => (
               <button
                 key={iv}
@@ -112,7 +112,7 @@ export default function PricingSection() {
           {PLANS.map((plan) => (
             <StaggerItem key={plan.name}>
               <div className={cn(
-                "rounded-md border p-8 bg-background relative h-full flex flex-col transition-transform duration-300 hover:-translate-y-1",
+                "rounded-md border border-border/50 p-8 bg-transparent relative h-full flex flex-col transition-transform duration-300 hover:-translate-y-1",
                 plan.featured
                   ? "border-primary shadow-[0_0_0_1px_hsl(142_69%_58%),0_0_80px_-16px_hsl(142_69%_58%/0.25)]"
                   : "border-border"

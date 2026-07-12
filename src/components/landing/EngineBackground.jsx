@@ -136,7 +136,7 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
     scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 5);
+    camera.position.set(0, 0, 3.5);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
@@ -283,11 +283,11 @@ export default function EngineBackground({ opacity = 0.6, overlay = 0.35 }) {
       }
       posAttr.needsUpdate = true;
 
-      // Flashing neurons — fire faster when scrolling
-      const fireBoost = Math.min(scrollVel * 80, 1);
+      // Flashing neurons — slow base rate, gentle scroll boost
+      const fireBoost = Math.min(scrollVel * 40, 0.5);
       flashSpheres.forEach((s) => {
-        const pulse = Math.sin(time * (2 + fireBoost * 6) + s.userData.phase);
-        const intensity = Math.max(0, pulse) * (0.3 + fireBoost * 0.7);
+        const pulse = Math.sin(time * (0.4 + fireBoost * 0.8) + s.userData.phase);
+        const intensity = Math.max(0, pulse) * (0.15 + fireBoost * 0.5);
         s.material.opacity = intensity;
         const scale = s.userData.baseScale * (1 + intensity * 1.5);
         s.scale.setScalar(scale);

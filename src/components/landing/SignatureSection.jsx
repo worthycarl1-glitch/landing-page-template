@@ -30,7 +30,7 @@ function StepCard({ step, active }) {
   const Icon = step.icon;
   return (
     <div className={cn(
-      "relative rounded-md border bg-background p-8 transition-all duration-500",
+      "relative rounded-md border border-border/50 bg-transparent p-8 transition-all duration-500",
       active
         ? "border-primary shadow-[0_0_0_1px_hsl(142_69%_58%),0_0_60px_-12px_hsl(142_69%_58%/0.3)]"
         : "border-border"
@@ -104,7 +104,7 @@ export default function SignatureSection() {
 
         {/* Punchline */}
         <Reveal delay={0.1}>
-          <div className="mt-8 flex flex-col md:flex-row items-start md:items-center gap-4 rounded-md border border-primary/30 bg-primary/5 p-6">
+          <div className="mt-8 flex flex-col md:flex-row items-start md:items-center gap-4 rounded-md border border-primary/30 bg-transparent p-6">
             <CalendarCheck className="w-6 h-6 text-primary flex-shrink-0" />
             <p className="text-sm md:text-base">
               <span className="font-semibold">The part no spreadsheet can do:</span>{" "}

@@ -26,7 +26,7 @@ export default function DemoRequestForm({ title, subtitle, buttonText = "Book a 
 
   if (status === "success") {
     return (
-      <div className="rounded-md border border-primary/30 bg-primary/5 p-12 text-center">
+      <div className="rounded-md border border-primary/30 bg-transparent p-12 text-center">
         <CheckCircle className="w-10 h-10 text-primary mx-auto mb-4" />
         <h3 className="font-heading font-bold text-2xl mb-2">You're on the list</h3>
         <p className="text-muted-foreground">We'll reach out within 24 hours to lock in your demo.</p>
@@ -53,13 +53,13 @@ export default function DemoRequestForm({ title, subtitle, buttonText = "Book a 
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
-            className="bg-card border-border min-h-[48px] font-body"
+            className="bg-transparent border-border min-h-[48px] font-body"
           />
           <Input
             placeholder="Company"
             value={form.company}
             onChange={(e) => setForm({ ...form, company: e.target.value })}
-            className="bg-card border-border min-h-[48px] font-body"
+            className="bg-transparent border-border min-h-[48px] font-body"
           />
         </div>
         <Input
@@ -68,14 +68,14 @@ export default function DemoRequestForm({ title, subtitle, buttonText = "Book a 
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
-          className="bg-card border-border min-h-[48px] font-body"
+          className="bg-transparent border-border min-h-[48px] font-body"
         />
         <Input
           type="tel"
           placeholder="Phone (optional)"
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          className="bg-card border-border min-h-[48px] font-body"
+          className="bg-transparent border-border min-h-[48px] font-body"
         />
         <Button type="submit" size="lg" className="w-full min-h-[48px] font-mono text-sm tracking-wider uppercase group" disabled={status === "loading"}>
           {status === "loading" ? (

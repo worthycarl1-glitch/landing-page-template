@@ -39,7 +39,7 @@ export default function FeaturesSection() {
         <Stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border rounded-md overflow-hidden border border-border" gap={0.05}>
           {FEATURES.map(({ icon: Icon, title, desc, href }) => (
             <StaggerItem key={title}>
-              <Link to={href} className="group bg-background p-7 flex flex-col gap-4 h-full transition-colors hover:bg-card/80">
+              <Link to={href} className="group bg-transparent p-7 flex flex-col gap-4 h-full transition-colors hover:bg-primary/5">
                 <div className="w-10 h-10 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
                   <Icon className="w-5 h-5 text-primary" />
                 </div>
