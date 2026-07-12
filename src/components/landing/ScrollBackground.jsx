@@ -1,22 +1,17 @@
-import React, { useRef } from "react";
+import React from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 const BG_IMAGE = "https://media.base44.com/images/public/6a531807448ccafb5fbc5248/9b12eeaee_generated_87d39218.png";
 
 export default function ScrollBackground() {
-  const ref = useRef(null);
   const reduce = useReducedMotion();
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"],
-  });
+  // Global page scroll — no target ref (fixed elements don't trigger element-scroll)
+  const { scrollYProgress } = useScroll();
 
-  // Map scroll progress → 3D rotation (full 360° spin over the page)
-  const rotateY = useTransform(scrollYProgress, [0, 1], [0, 360]);
-  const rotateX = useTransform(scrollYProgress, [0, 1], [0, 12]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.1, 1.25, 1.1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.12, 0.18, 0.18, 0.08]);
+  // Full 360° spin across the page scroll
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.3, 1.5, 1.3]);
 
   if (reduce) {
     return (
@@ -25,26 +20,22 @@ export default function ScrollBackground() {
           src={BG_IMAGE}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover opacity-[0.08]"
+          className="w-full h-full object-cover opacity-[0.12]"
         />
-        <div className="absolute inset-0 bg-background/40" />
       </div>
     );
   }
 
   return (
     <div
-      ref={ref}
       className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
-      style={{ perspective: "1200px" }}
+      style={{ perspective: "1000px" }}
     >
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
         style={{
-          rotateY,
-          rotateX,
+          rotate,
           scale,
-          opacity,
           transformStyle: "preserve-3d",
         }}
       >
@@ -52,11 +43,11 @@ export default function ScrollBackground() {
           src={BG_IMAGE}
           alt=""
           aria-hidden="true"
-          className="w-[140%] h-[140%] object-cover"
+          className="w-[180%] h-[180%] object-cover opacity-25"
         />
       </motion.div>
       {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-background/55" />
+      <div className="absolute inset-0 bg-background/40" />
     </div>
   );
 }

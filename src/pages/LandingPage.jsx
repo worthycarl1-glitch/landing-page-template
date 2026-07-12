@@ -16,7 +16,7 @@ export default function LandingPage() {
   const railScale = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground antialiased overflow-x-hidden">
+    <div className="min-h-screen flex flex-col text-foreground antialiased overflow-x-hidden">
       {/* 3D scroll-spinning background */}
       <ScrollBackground />
 
