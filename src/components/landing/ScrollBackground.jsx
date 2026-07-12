@@ -9,8 +9,8 @@ export default function ScrollBackground() {
   // Global page scroll — no target ref (fixed elements don't trigger element-scroll)
   const { scrollYProgress } = useScroll();
 
-  // Full 360° spin across the page scroll
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
+  // Y-axis rotation — spins like Earth on its axis
+  const rotateY = useTransform(scrollYProgress, [0, 1], [0, 360]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.3, 1.5, 1.3]);
 
   if (reduce) {
@@ -34,7 +34,7 @@ export default function ScrollBackground() {
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
         style={{
-          rotate,
+          rotateY,
           scale,
           transformStyle: "preserve-3d",
         }}

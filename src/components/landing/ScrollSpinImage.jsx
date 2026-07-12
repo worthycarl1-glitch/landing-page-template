@@ -7,7 +7,8 @@ export default function ScrollSpinImage({ opacity = 0.25, overlay = 0.4 }) {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
 
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
+  // Y-axis rotation — spins like Earth on its axis
+  const rotateY = useTransform(scrollYProgress, [0, 1], [0, 360]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.3, 1.5, 1.3]);
 
   if (reduce) {
@@ -19,10 +20,10 @@ export default function ScrollSpinImage({ opacity = 0.25, overlay = 0.4 }) {
   }
 
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" style={{ perspective: "1000px" }}>
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" style={{ perspective: "1200px" }}>
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
-        style={{ rotate, scale, transformStyle: "preserve-3d" }}
+        style={{ rotateY, scale, transformStyle: "preserve-3d" }}
       >
         <img
           src={IMAGE_URL}
